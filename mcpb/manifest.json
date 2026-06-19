@@ -1,0 +1,67 @@
+{
+  "$comment": "DRAFT manifest for the .mcpb MCP Bundle (Claude Desktop Extension). Validate with `mcpb validate` before packing; field set follows github.com/modelcontextprotocol/mcpb as of 2026-06. Do not publish before the repo is public (approval gate).",
+  "manifest_version": "0.2",
+  "name": "servomotor-mcp",
+  "display_name": "Gearotons M17 Servomotor Control",
+  "version": "0.1.0",
+  "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485 — moves, homing, sequences, telemetry, with built-in software safety limits.",
+  "long_description": "The M17 is an open-source, closed-loop NEMA-17 integrated servomotor (motor + driver + controller + encoder in one, daisy-chainable over RS-485). This server exposes 9 tools so Claude can move real hardware: verified on production motors at 0.000° closed-loop repeatability, with per-axis software safety clamps that physically stop over-travel. A mock backend lets you try everything with no hardware attached.",
+  "author": {
+    "name": "Gearotons",
+    "email": "info@gearotons.com",
+    "url": "https://gearotons.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gearotons/servomotor-mcp"
+  },
+  "homepage": "https://gearotons.com",
+  "documentation": "https://tutorial.gearotons.com",
+  "license": "MIT",
+  "keywords": ["robotics", "servomotor", "hardware", "rs-485", "motor-control", "open-source-hardware", "nema-17"],
+  "server": {
+    "type": "python",
+    "entry_point": "server/main.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["${__dirname}/server/main.py"],
+      "env": {
+        "GEAROTONS_MOTOR_BACKEND": "${user_config.backend}",
+        "GEAROTONS_SERIAL_PORT": "${user_config.serial_port}",
+        "PYTHONPATH": "${__dirname}/server/lib"
+      }
+    }
+  },
+  "user_config": {
+    "backend": {
+      "type": "string",
+      "title": "Backend",
+      "description": "'mock' to try without hardware; 'serial' to drive real motors over RS-485.",
+      "enum": ["mock", "serial"],
+      "default": "mock",
+      "required": true
+    },
+    "serial_port": {
+      "type": "string",
+      "title": "Serial port",
+      "description": "RS-485 adapter port (e.g. /dev/cu.usbserial-210 on macOS, COM3 on Windows). Ignored by the mock backend.",
+      "default": "",
+      "required": false
+    }
+  },
+  "tools": [
+    { "name": "list_motors", "description": "List configured motors, aliases, and limits" },
+    { "name": "move_to", "description": "Move a motor to an absolute angle (degrees), safety-clamped" },
+    { "name": "move_relative", "description": "Move a motor by a relative angle, safety-clamped" },
+    { "name": "trapezoid_move", "description": "Timed trapezoidal move to an angle over a duration" },
+    { "name": "home", "description": "Home one or all motors (zero reference)" },
+    { "name": "get_status", "description": "Position/telemetry for one or all motors" },
+    { "name": "stop", "description": "Stop one or all motors immediately" },
+    { "name": "reset", "description": "Firmware system reset to recover from faults" },
+    { "name": "run_sequence", "description": "Run a list of move/wait steps as one sequence" }
+  ],
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": { "python": ">=3.10" }
+  }
+}

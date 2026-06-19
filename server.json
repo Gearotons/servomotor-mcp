@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "_comment": "MCP Registry entry. Verify the current schema version + field names with `mcp-publisher` (the schema evolves). Namespace uses the GitHub-owned form io.github.<owner>/<repo>, which the registry verifies via the repo. Publish only after the GitHub repo is public and the PyPI package is live.",
+  "name": "io.github.gearotons/servomotor-mcp",
+  "description": "Drive Gearotons M17 open-source servomotors from natural language over RS-485 — moves, homing, sequences, telemetry, with built-in software safety clamps. Ships a mock backend (no hardware needed).",
+  "status": "active",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/Gearotons/servomotor-mcp",
+    "source": "github"
+  },
+  "websiteUrl": "https://gearotons.com",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "servomotor-mcp",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "GEAROTONS_MOTOR_BACKEND",
+          "description": "'mock' to try with no hardware (default), or 'serial' to drive real motors over RS-485.",
+          "isRequired": false,
+          "default": "mock"
+        },
+        {
+          "name": "GEAROTONS_SERIAL_PORT",
+          "description": "Serial device for the USB-RS485 adapter when backend=serial (e.g. /dev/cu.usbserial-210, /dev/ttyUSB0, COM3).",
+          "isRequired": false
+        },
+        {
+          "name": "GEAROTONS_MOTOR_ALIASES",
+          "description": "Comma-separated friendly motor names, e.g. 'x' or 'base,elbow'.",
+          "isRequired": false,
+          "default": "x,y,z"
+        },
+        {
+          "name": "GEAROTONS_LIMITS",
+          "description": "JSON per-axis safety limits the server clamps to, e.g. {\"x\":{\"min_deg\":-90,\"max_deg\":90,\"max_speed\":300}}.",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

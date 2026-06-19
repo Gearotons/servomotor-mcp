@@ -1,0 +1,42 @@
+name: Publish to PyPI
+
+# Builds and publishes servomotor-mcp to PyPI on a version tag (e.g. v0.1.0),
+# using PyPI Trusted Publishing (OIDC) — no API token needed.
+#
+# ONE-TIME SETUP (do before the first tag):
+#   On PyPI → the servomotor-mcp project → Settings → Publishing → add a "pending publisher":
+#     Owner:        Gearotons
+#     Repository:   servomotor-mcp
+#     Workflow:     publish.yml
+#     Environment:  pypi   (matches the `environment:` below; optional but recommended)
+#   (If the existing `servomotor` project uses an API token instead, you can swap this for that
+#    method — see DEPLOY_INSTRUCTIONS.md. Trusted publishing is preferred.)
+#
+# RELEASE:  git tag v0.1.0 && git push --tags     (or run this workflow manually)
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write        # required for trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Verify the build
+        run: |
+          python -m pip install --upgrade twine
+          twine check dist/*
+      - name: Publish to PyPI (trusted publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1

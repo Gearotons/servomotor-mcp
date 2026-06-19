@@ -1,0 +1,49 @@
+# Gearotons M17 MCP server — consolidated test results
+# Generated 2026-06-08 against the real motor on /dev/cu.usbserial-210 (alias 88)
+
+## Unit tests (mock + safety; no hardware, no mcp)
+................                                                         [100%]
+16 passed in 0.02s
+
+## Hardware: basic telemetry + bounded move
+  [ERR] ping (echoes 10-byte payload): SystemExit: 1
+  [ok ] product_info: ['M17     ', 3, [0, 5, 1], 1330, 11062357502496892245, 0]
+  [ok ] firmware_version: [[0, 0, 15, 0], 0]
+  [ok ] product_description: 'Servomotor\x00'
+  [ok ] status: [0, 0]
+  [ok ] supply_voltage: 20200.0
+  [ok ] temperature: 36
+  [ok ] position (deg): -14.499975585937499
+  [ok ] comprehensive_position: [-14.499975585937499, -10.693981933593749, 0.0]
+  [ok ] position after +18 deg: 3.5000244140624996
+  [ok ] position after return: -14.499975585937499
+  net displacement: +0.000 deg (expect ~0)
+MOTION TEST PASSED
+
+## Hardware: SerialBus + safety clamp (MCP tool path)
+  move_to(x, 45) -> pos=45.00° v=20.2V
+  move_to(x, 0) -> pos=0.00° v=20.2V
+  move_to(x, -30) -> pos=-30.00° v=20.2V
+--- move_relative (tool path) ---
+  move_relative(+15) -> pos=-15.00°
+--- LIVE SAFETY CLAMP: command 200° on a motor limited to 90° ---
+  move_to(x, 200) -> pos=90.00° v=20.2V  | ['target 200° clamped to 90° (range -90..90)']
+  motor stopped at 90.00° (<=90 expected) -> CLAMP WORKED ✅
+  move_to(x, 30) -> pos=30.00° v=20.2V
+  move_to(x, -30) -> pos=-30.00° v=20.2V
+  move_to(x, 0) -> pos=0.00° v=20.2V
+  homed x -> 0.00°
+SERIALBUS INTEGRATION TEST PASSED
+
+## Hardware: advanced (identify + repeatability + wave)
+--- 1. identify (LED should blink on the motor) ---
+  identify() sent — check the motor LED
+  mean error=0.000°   max error=0.000°   tolerance=0.5°
+ADVANCED TEST PASSED  (max err 0.000° vs tol 0.5°)
+
+## Hardware: extended (PID err, velocity, throughput, reliability)
+--- 1. enable + get_max_pid_error (closed-loop error, in degrees) ---
+  [ok ] max_pid_error [min,max]: [235929.5998901367, -235929.59999999998]
+  20 moves in 7.0s = 2.87 moves/s; worst position error 0.000°
+  5/5 enable+disable cycles clean
+EXTENDED TEST PASSED
