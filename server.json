@@ -4,7 +4,7 @@
   "name": "io.github.gearotons/servomotor-mcp",
   "description": "Drive Gearotons M17 open-source servomotors from natural language over RS-485 — moves, homing, sequences, telemetry, with built-in software safety clamps. Ships a mock backend (no hardware needed).",
   "status": "active",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": {
     "url": "https://github.com/Gearotons/servomotor-mcp",
     "source": "github"
@@ -14,7 +14,7 @@
     {
       "registryType": "pypi",
       "identifier": "servomotor-mcp",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         {

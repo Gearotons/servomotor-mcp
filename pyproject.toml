@@ -1,6 +1,6 @@
 [project]
 name = "servomotor-mcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "MCP server to drive Gearotons M17 open-source servomotors from natural language (Claude / any MCP client) over RS-485."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -27,7 +27,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-serial = ["servomotor"]
+# Real-hardware backend. Pinned to >=0.10.0: that release matches the M17 firmware
+# the server is verified against and is the first cross-platform (CPython+MicroPython)
+# library; the mock path installs cleanly without this extra.
+serial = ["servomotor>=0.10.0"]
 dev = ["pytest>=8.0"]
 
 [project.scripts]
