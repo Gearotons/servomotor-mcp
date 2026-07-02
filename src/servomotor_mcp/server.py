@@ -1,8 +1,13 @@
 """Gearotons M17 — MCP server.
 
-Exposes the M17 servomotor as a small set of high-level, safety-checked tools so any
-MCP-capable client (Claude Desktop, Claude Code, an agent loop) can drive real motors
-from natural language. Built on the official ``mcp`` Python SDK (FastMCP).
+Exposes the M17 servomotor as a small set of high-level tools so any MCP-capable client
+(Claude Desktop, Claude Code, an agent loop) can drive real motors from natural language.
+Built on the official ``mcp`` Python SDK (FastMCP).
+
+The server is a thin control layer: it maps friendly aliases to real motors and forwards
+each tool call straight to the hardware. There is no software clamping — the motor executes
+what it is asked to, exactly like driving it from the ``servomotor`` library directly. The
+motor's own firmware protections (over-current / over-voltage / over-temperature) still apply.
 
 Run locally (mock backend, no hardware):
     uvx --from . servomotor-mcp        # or: python -m servomotor_mcp
@@ -20,25 +25,17 @@ from __future__ import annotations
 from mcp.server.fastmcp import FastMCP
 
 from .motors import get_bus
-from .safety import SafetyPolicy
 from .sequencer import run_sequence_steps
 
 mcp = FastMCP("gearotons-motor")
 
 _bus = get_bus()
-_policy = SafetyPolicy.from_env(
-    allowed_aliases=tuple(m.alias for m in _bus.list_motors())
-)
 
 
-def _result(states, notes=None) -> dict:
-    """Uniform tool result: motor states plus any safety notes the LLM should see."""
+def _result(states) -> dict:
+    """Uniform tool result: the affected motor states."""
     states = states if isinstance(states, list) else [states]
-    out: dict = {"motors": [s.as_dict() for s in states]}
-    notes = [n for n in (notes or []) if n]
-    if notes:
-        out["safety_notes"] = notes
-    return out
+    return {"motors": [s.as_dict() for s in states]}
 
 
 @mcp.tool()
@@ -55,29 +52,20 @@ def move_to(motor: str, degrees: float, speed: float | None = None) -> dict:
     """Move one motor to an ABSOLUTE angle in degrees (closed-loop, won't lose steps).
 
     Use when the user names a target position ("go to 90 degrees", "point straight up").
-    The target is clamped to the motor's configured software limits; any clamp is
-    reported in ``safety_notes``. ``speed`` is degrees/second (optional).
+    Angles are unbounded — full multi-turn travel is allowed (e.g. 360 = one full turn,
+    720 = two). ``speed`` is degrees/second (optional).
     """
-    _policy.require_allowed(motor)
-    target, note_t = _policy.clamp_absolute(motor, degrees)
-    spd, note_s = _policy.clamp_speed(motor, speed)
-    state = _bus.move_to(motor, target, spd)
-    return _result(state, [note_t, note_s])
+    return _result(_bus.move_to(motor, degrees, speed))
 
 
 @mcp.tool()
 def move_relative(motor: str, degrees: float, speed: float | None = None) -> dict:
     """Nudge one motor by a RELATIVE amount in degrees (+ / -).
 
-    Use for "turn a bit more", "back off 10 degrees", or incremental jogging. The move is
-    clamped so the resulting absolute position stays within software limits.
+    Use for "turn a bit more", "back off 10 degrees", or incremental jogging. Any magnitude
+    is allowed; multiple full turns are fine.
     """
-    _policy.require_allowed(motor)
-    current = _bus.get_status(motor)[0].position_deg
-    delta, note_d = _policy.clamp_relative(motor, current, degrees)
-    spd, note_s = _policy.clamp_speed(motor, speed)
-    state = _bus.move_relative(motor, delta, spd)
-    return _result(state, [note_d, note_s])
+    return _result(_bus.move_relative(motor, degrees, speed))
 
 
 @mcp.tool()
@@ -87,20 +75,15 @@ def trapezoid_move(motor: str, degrees: float, duration_s: float) -> dict:
     Prefer this over ``move_to`` for arms, plotters, or anything where a sudden move would
     jerk the mechanism. Good for choreographed motion.
     """
-    _policy.require_allowed(motor)
-    target, note_t = _policy.clamp_absolute(motor, degrees)
-    state = _bus.trapezoid_move(motor, target, duration_s)
-    return _result(state, [note_t])
+    return _result(_bus.trapezoid_move(motor, degrees, duration_s))
 
 
 @mcp.tool()
 def home(motor: str | None = None) -> dict:
-    """Run homing on one motor, or ALL motors if ``motor`` is omitted.
+    """Send one motor to absolute zero, or ALL motors if ``motor`` is omitted.
 
     Call at the start of a build, or when the user says "home", "reset", or "go to zero".
     """
-    if motor is not None:
-        _policy.require_allowed(motor)
     return _result(_bus.home(motor))
 
 
@@ -111,8 +94,6 @@ def get_status(motor: str | None = None) -> dict:
     Call after a move to CONFIRM it completed, or when the user asks "where is it / what's
     its state".
     """
-    if motor is not None:
-        _policy.require_allowed(motor)
     return _result(_bus.get_status(motor))
 
 
@@ -122,8 +103,6 @@ def stop(motor: str | None = None) -> dict:
 
     Use for "stop", "halt", "cancel", or any sign something is wrong. Always available.
     """
-    if motor is not None:
-        _policy.require_allowed(motor)
     return _result(_bus.stop(motor))
 
 
@@ -134,8 +113,6 @@ def reset(motor: str | None = None) -> dict:
     Call when ``get_status`` reports an error the motor won't clear on its own. The motor
     returns to a clean, idle state afterward. Omit ``motor`` to reset all.
     """
-    if motor is not None:
-        _policy.require_allowed(motor)
     return _result(_bus.reset(motor))
 
 
@@ -150,12 +127,11 @@ def run_sequence(steps: list[dict]) -> dict:
         {"action": "home",           "motor": "x"}            # motor optional -> all
         {"action": "stop"}                                     # motor optional -> all
 
-    Steps run in order; each is individually safety-checked and clamped. Returns the final
-    state of every motor plus any safety notes that fired. Engine lives in ``sequencer.py``
-    (pure, unit- and hardware-tested without the MCP SDK).
+    Steps run in order. Returns the final state of every motor. Engine lives in
+    ``sequencer.py`` (pure, unit- and hardware-tested without the MCP SDK).
     """
-    notes = run_sequence_steps(_bus, _policy, steps)
-    return _result(_bus.get_status(), notes)
+    run_sequence_steps(_bus, steps)
+    return _result(_bus.get_status())
 
 
 def main() -> None:

@@ -1,7 +1,7 @@
 """Motor backends for the Gearotons M17 MCP server.
 
-Two backends share one interface so the MCP server, tools, and safety rails can be
-built and tested with no hardware, then point at real motors by flipping one env var:
+Two backends share one interface so the MCP server and tools can be built and tested
+with no hardware, then point at real motors by flipping one env var:
 
 - ``MockBus``  — an in-memory simulation. Moves complete instantly (or after a short
   simulated delay) and are logged. Used for development, CI, and the scripted demo dry-run.
@@ -14,10 +14,26 @@ Select with ``GEAROTONS_MOTOR_BACKEND=mock|serial`` (default: ``mock``).
 
 from __future__ import annotations
 
+import contextlib
 import os
+import sys
 import time
 from dataclasses import dataclass, field
 from typing import Protocol
+
+
+@contextlib.contextmanager
+def _quiet_stdout():
+    """Route library chatter off the JSON-RPC channel.
+
+    The Gearotons ``servomotor`` library prints connection/diagnostic messages (and can
+    drop into an interactive port-selection menu) on **stdout**. When this MCP server runs
+    over stdio, stdout IS the JSON-RPC transport, so any stray text corrupts the stream and
+    the client reports "not valid JSON". Redirect the library's stdout to stderr (which the
+    client shows in logs, harmlessly) for the duration of every library call.
+    """
+    with contextlib.redirect_stdout(sys.stderr):
+        yield
 
 
 @dataclass
@@ -182,32 +198,43 @@ class SerialBus:
         self.default_speed_dps = default_speed_dps
         self._enabled: set[str] = set()
 
+        # Set the port explicitly via the module global so the library never falls back to a
+        # cached device file or the interactive stdin menu — either of which hangs/corrupts a
+        # stdio MCP server. ``open_serial_port()`` reads this global and takes NO port argument
+        # (its only positional is ``timeout``), so it must be called with no args. All of this
+        # prints to stdout, so keep it off the JSON-RPC channel.
         communication.serial_port = port
-        servomotor.open_serial_port()
+        with _quiet_stdout():
+            servomotor.open_serial_port()
 
-        if motor_map is None:
-            # Auto-detect: a broadcast M3 + iterative detection, then name each m{alias}.
-            servomotor.M3(alias_or_unique_id=255, verbose=0)
-            devices = detect_devices_iteratively(3, verbose=False) or []
-            motor_map = {f"m{d.alias}": d.alias for d in devices}
-        self.motor_map = motor_map
+            if motor_map is None:
+                # Auto-detect: a broadcast M3 + iterative detection, then name each m{alias}.
+                servomotor.M3(alias_or_unique_id=255, verbose=0)
+                devices = detect_devices_iteratively(3, verbose=False) or []
+                motor_map = {f"m{d.alias}": d.alias for d in devices}
+            self.motor_map = motor_map
 
-        # One M3 handle per friendly alias, in degrees/seconds.
-        self._m = {
-            name: servomotor.M3(
-                alias_or_unique_id=addr, time_unit="seconds",
-                position_unit="degrees", verbose=0
-            )
-            for name, addr in motor_map.items()
-        }
+            # One M3 handle per friendly alias, in degrees/seconds.
+            self._m = {
+                name: servomotor.M3(
+                    alias_or_unique_id=addr, time_unit="seconds",
+                    position_unit="degrees", verbose=0
+                )
+                for name, addr in motor_map.items()
+            }
 
     # --- library-error guard ----------------------------------------------------------
 
     @staticmethod
     def _safe(fn, *args):
-        """Call a library method; convert its SystemExit-on-error into RuntimeError."""
+        """Call a library method; convert its SystemExit-on-error into RuntimeError.
+
+        Wrapped in ``_quiet_stdout`` because the library may print (e.g. error/troubleshooting
+        text) mid-command, which would otherwise corrupt the stdio JSON-RPC stream.
+        """
         try:
-            return fn(*args)
+            with _quiet_stdout():
+                return fn(*args)
         except SystemExit as exc:  # library exits the process on a command error
             raise RuntimeError(f"servomotor command failed ({fn.__name__})") from exc
 
