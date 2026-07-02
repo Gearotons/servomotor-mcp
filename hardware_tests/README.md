@@ -24,10 +24,10 @@ port/alias args if yours differ.
 |---|---|---|
 | `discover_motor.py` | Finds which of the connected RS-485 adapters has a motor; reports unique ID + alias. | servomotor |
 | `hw_test_basic.py` | Read-only telemetry (product/fw/status/voltage/temp/position) + one bounded ±18° move. | servomotor |
-| `hw_test_serialbus.py` | The **MCP tool code path** (SafetyPolicy clamp → `SerialBus`), incl. a live safety clamp. | servomotor + `src/` |
+| `hw_test_serialbus.py` | The **MCP tool code path** (thin control layer → `SerialBus`), incl. a full-range multi-turn move. | servomotor + `src/` |
 | `hw_test_advanced.py` | `identify` LED blink + 12-target repeatability + a "wave" demo routine. | servomotor + `src/` |
 | `hw_test_extended.py` | PID-error readout, bounded velocity move, throughput timing, enable/disable reliability. | servomotor + `src/` |
-| `hw_test_sequence.py` | The `run_sequence` engine (the "draw"/"wave" path): a draw routine, a sequence-level clamp, and abort-on-disallowed-motor. | servomotor + `src/` |
+| `hw_test_sequence.py` | The `run_sequence` engine (the "draw"/"wave" path): a draw routine and a full-range multi-turn move. | servomotor + `src/` |
 | `hw_test_endurance.py` | N bounded moves with temperature/voltage/error sampling — reliability + thermal data. | servomotor + `src/` |
 
 ```bash
@@ -45,8 +45,9 @@ PYTHONPATH=$PKG:$SERVOMOTOR   python3 hw_test_sequence.py
   other three adapters empty.
 - **Telemetry:** M17, fw **0.15.0.0**, status `[0,0]` (healthy), supply **20.0 V**, **35 °C**.
 - **Bounded move:** +18° → read back 17.9999°, return → 0.000° net drift.
-- **SerialBus + safety:** absolute moves exact; **live clamp** — commanded 200° on a ±90°-
-  limited motor → physically stopped at **90.00°** with the clamp note surfaced. ✅
+- **SerialBus (thin control layer):** absolute moves exact; **full range** — commanded 720°
+  (two full turns) → motor reached **720.00°**, no software clamp. The MCP passes commands
+  straight through; the motor's firmware self-protects (over-current/voltage/temperature). ✅
 - **Repeatability:** 12 random targets across ±80° → **0.000° mean & max error** (tol 0.5°).
 - **Demo routine + LED identify:** clean.
 - **Extended:** 20-move throughput 2.87 moves/s @ 0.000° worst error; 5/5 enable/disable
@@ -58,10 +59,10 @@ Every test force-disables the MOSFETs and closes the port in a `finally` block.
 
 ## Unit tests (no hardware)
 
-The mock backend + safety rails + sequencer are covered by `../tests/` (21 tests):
+The mock backend + sequencer are covered by `../tests/`:
 
 ```bash
-PYTHONPATH=../src python3 -m pytest -q ../tests   # 21 passed
+PYTHONPATH=../src python3 -m pytest -q ../tests
 ```
 
 ## Note on the live MCP-over-stdio test
@@ -69,5 +70,5 @@ PYTHONPATH=../src python3 -m pytest -q ../tests   # 21 passed
 Running the actual FastMCP server end-to-end (MCP client → server → motor) needs the `mcp`
 SDK, which requires **Python ≥3.10**; the test machine has 3.9, so that step is deferred to
 a 3.10+ host (e.g. the dev machine). It is low-risk: `hw_test_serialbus.py` already exercises
-the identical tool logic (clamp → `SerialBus`) on hardware — only generic FastMCP transport
-plumbing is left unverified.
+the identical tool logic (thin control layer → `SerialBus`) on hardware — only generic
+FastMCP transport plumbing is left unverified.

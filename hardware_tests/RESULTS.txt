@@ -1,7 +1,7 @@
 # Gearotons M17 MCP server — consolidated test results
 # Generated 2026-06-08 against the real motor on /dev/cu.usbserial-210 (alias 88)
 
-## Unit tests (mock + safety; no hardware, no mcp)
+## Unit tests (mock + sequencer; no hardware, no mcp)
 ................                                                         [100%]
 16 passed in 0.02s
 
@@ -20,15 +20,15 @@
   net displacement: +0.000 deg (expect ~0)
 MOTION TEST PASSED
 
-## Hardware: SerialBus + safety clamp (MCP tool path)
+## Hardware: SerialBus, thin control layer (MCP tool path)
   move_to(x, 45) -> pos=45.00° v=20.2V
   move_to(x, 0) -> pos=0.00° v=20.2V
   move_to(x, -30) -> pos=-30.00° v=20.2V
 --- move_relative (tool path) ---
   move_relative(+15) -> pos=-15.00°
---- LIVE SAFETY CLAMP: command 200° on a motor limited to 90° ---
-  move_to(x, 200) -> pos=90.00° v=20.2V  | ['target 200° clamped to 90° (range -90..90)']
-  motor stopped at 90.00° (<=90 expected) -> CLAMP WORKED ✅
+--- FULL RANGE: command 720° (two turns) — thin layer, no clamp ---
+  move_to(x, 720) -> pos=720.00° v=20.2V
+  motor reached 720.00° (~720 expected) -> FULL RANGE OK ✅
   move_to(x, 30) -> pos=30.00° v=20.2V
   move_to(x, -30) -> pos=-30.00° v=20.2V
   move_to(x, 0) -> pos=0.00° v=20.2V

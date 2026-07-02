@@ -3,7 +3,10 @@
 
 Prints each plain-language intent + the tool it maps to, then moves the motor with a pause
 so you can watch. This is exactly what an AI assistant does via the MCP server — here a
-script plays the role of the AI so you can see the motor respond. Ends with the safety clamp.
+script plays the role of the AI so you can see the motor respond. The MCP is a thin control
+layer: commands go straight to the motor with no software clamping, so the demo ends with a
+full-range multi-turn move. The motor's own firmware self-protects (over-current/voltage/
+temperature).
 
 Run:
     PYTHONPATH=../src:/Users/sandbox1/servomotor/python_programs python3 demo_live.py
@@ -13,7 +16,6 @@ from __future__ import annotations
 import time
 
 from servomotor_mcp.motors import SerialBus
-from servomotor_mcp.safety import MotorLimits, SafetyPolicy
 
 NAME = "x"
 PAUSE = 1.2
@@ -25,8 +27,6 @@ def say(intent, tool):
 
 def main() -> int:
     bus = SerialBus(port="/dev/cu.usbserial-210", motor_map={NAME: 88})
-    policy = SafetyPolicy(allowed=frozenset({NAME}),
-                          limits={NAME: MotorLimits(min_deg=-90, max_deg=90, max_speed=300)})
     m = bus._m[NAME]
     try:
         print("=" * 64)
@@ -52,13 +52,11 @@ def main() -> int:
         print(f"      -> back to {bus.get_status(NAME)[0].position_deg:.1f}°"); time.sleep(PAUSE)
 
         print("\n" + "-" * 64)
-        print(" SAFETY DEMO — the limits live in the software, not the AI's goodwill.")
-        print(" This motor is configured with a max of 90°.")
-        say("Spin all the way to 300 degrees!", "move_to(x, 300)")
-        target, note = policy.clamp_absolute(NAME, 300)
-        s = bus.move_to(NAME, target)
-        print(f"      -> {note}")
-        print(f"      -> motor STOPPED at {s.position_deg:.1f}° (refused to exceed 90°)")
+        print(" FULL-RANGE DEMO — the MCP is a thin control layer: no software clamp.")
+        print(" The command goes straight to the motor; firmware self-protects (OC/OV/OT).")
+        say("Spin two full turns — go to 720 degrees!", "move_to(x, 720)")
+        s = bus.move_to(NAME, 720)
+        print(f"      -> motor reached {s.position_deg:.1f}° (full range, no clamp)")
         time.sleep(PAUSE)
 
         say("Okay, home and rest.", "home() + stop()")

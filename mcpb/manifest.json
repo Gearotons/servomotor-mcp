@@ -3,9 +3,9 @@
   "manifest_version": "0.2",
   "name": "servomotor-mcp",
   "display_name": "Gearotons M17 Servomotor Control",
-  "version": "0.1.1",
-  "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485 — moves, homing, sequences, telemetry, with built-in software safety limits.",
-  "long_description": "The M17 is an open-source, closed-loop NEMA-17 integrated servomotor (motor + driver + controller + encoder in one, daisy-chainable over RS-485). This server exposes 9 tools so Claude can move real hardware: verified on production motors at 0.000° closed-loop repeatability, with per-axis software safety clamps that physically stop over-travel. A mock backend lets you try everything with no hardware attached.",
+  "version": "0.2.0",
+  "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485 — moves, homing, sequences, telemetry. A thin control layer with full range of motion.",
+  "long_description": "The M17 is an open-source, closed-loop NEMA-17 integrated servomotor (motor + driver + controller + encoder in one, daisy-chainable over RS-485). This server exposes 9 tools so Claude can move real hardware: verified on production motors at 0.000° closed-loop repeatability, with full multi-turn range (the server forwards commands straight to the motor; the motor's firmware self-protects against over-current/voltage/temperature). A mock backend lets you try everything with no hardware attached.",
   "author": {
     "name": "Gearotons",
     "email": "info@gearotons.com",

@@ -9,8 +9,7 @@
       "env": {
         "GEAROTONS_MOTOR_BACKEND": "mock",
         "GEAROTONS_MOTOR_ALIASES": "x,y,z",
-        "GEAROTONS_MOCK_SIM_SECONDS": "0.4",
-        "GEAROTONS_LIMITS": "{\"x\": {\"min_deg\": -180, \"max_deg\": 180, \"max_speed\": 300}, \"y\": {\"min_deg\": -180, \"max_deg\": 180}, \"z\": {\"min_deg\": 0, \"max_deg\": 90}}"
+        "GEAROTONS_MOCK_SIM_SECONDS": "0.4"
       }
     },
     "//real-hardware": "To drive real motors, set GEAROTONS_MOTOR_BACKEND=serial and GEAROTONS_SERIAL_PORT=/dev/ttyUSB0, and install with the [serial] extra."

@@ -20,11 +20,11 @@ no code — just plain English.**
    → Claude composes a `run_sequence` of `move_to`/`trapezoid_move` steps. This is the
      clip that goes in the launch posts — one sentence, real motion.
 
-## Show the safety rails (great for the technical audience / HN comments)
-6. "Spin Z to 300 degrees."
-   → Z is limited to 0–90°; the move is **clamped to 90°** and Claude reports the clamp
-     from `safety_notes` ("I limited that to 90° because Z's configured range is 0–90").
-     Demonstrates that the guardrails live in the server, not the model's goodwill.
+## Show full range of motion (great for the technical audience / HN comments)
+6. "Spin Z to 720 degrees."
+   → The server forwards the command straight to the motor — it makes two full turns and the
+     closed-loop encoder confirms it settled at 720°. The MCP is a thin control layer with no
+     software limits; the motor's own firmware protects it (over-current/voltage/temperature).
 
 ## The "talk to your hardware" moment
 7. "Wave hello with the Z axis."
