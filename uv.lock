@@ -216,7 +216,7 @@ name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/79/66800aadf48771f6b62f7eb014e352e5d06856655206165d775e675a02c9/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219", size = 30371, upload-time = "2025-11-21T23:01:54.787Z" }
 wheels = [
@@ -885,16 +885,16 @@ wheels = [
 
 [[package]]
 name = "servomotor"
-version = "0.9.1"
+version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e2/c3/80b1178b7dbea190c70837524fff079086d6a7407d2f24554fc6ca0bdced/servomotor-0.9.1.tar.gz", hash = "sha256:26659dfba5945d3e8e99fedff69f98a098a71dfb87d98baed758a629fa20ffd4", size = 117053, upload-time = "2025-10-17T10:22:04.202Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/66/fd57e385169578a80c66e461a59c113438a7064912e82dad0632cbb41c6c/servomotor-0.10.0.tar.gz", hash = "sha256:4042486b62053b69020af4e629d98ebb537fedcbd40927b80ae6d1174b4d79f4", size = 122423, upload-time = "2026-06-23T02:04:10.842Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/dc/f9856470842a80d53db889d64b643557fc36fbcf5bcd7b7e3ed14830d140/servomotor-0.9.1-py3-none-any.whl", hash = "sha256:3033b2e89a73c2347c23fc5d1067125977ddc4239f798533eec84228ca3ee436", size = 139021, upload-time = "2025-10-17T10:22:02.417Z" },
+    { url = "https://files.pythonhosted.org/packages/55/cb/2a1822be542cd68353d1514cdb3c9964a0883bfea7ec6eb33f54654d1e2e/servomotor-0.10.0-py3-none-any.whl", hash = "sha256:c34b5ec89d276753fb3bec0dd99995b35c599ec48c3c6c8bad3bdf548abc2493", size = 146101, upload-time = "2026-06-23T02:04:08.114Z" },
 ]
 
 [[package]]
 name = "servomotor-mcp"
-version = "0.1.0"
+version = "0.3.0"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },
@@ -912,7 +912,7 @@ serial = [
 requires-dist = [
     { name = "mcp", specifier = ">=1.2.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "servomotor", marker = "extra == 'serial'" },
+    { name = "servomotor", marker = "extra == 'serial'", specifier = ">=0.10.0" },
 ]
 provides-extras = ["serial", "dev"]
 
