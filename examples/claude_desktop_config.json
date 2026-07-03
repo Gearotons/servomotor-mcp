@@ -1,17 +1,13 @@
 {
   "//": "Add this block to Claude Desktop's MCP config (claude_desktop_config.json).",
   "//1": "macOS: ~/Library/Application Support/Claude/claude_desktop_config.json",
-  "//2": "Restart Claude Desktop after editing. Mock backend = no hardware needed.",
+  "//2": "Restart Claude Desktop after editing.",
+  "//3": "No motor or port configuration needed: ask Claude to list serial ports, connect, and it auto-detects the motors on the bus.",
   "mcpServers": {
     "gearotons-motor": {
       "command": "uvx",
-      "args": ["--from", "servomotor-mcp", "servomotor-mcp"],
-      "env": {
-        "GEAROTONS_MOTOR_BACKEND": "mock",
-        "GEAROTONS_MOTOR_ALIASES": "x,y,z",
-        "GEAROTONS_MOCK_SIM_SECONDS": "0.4"
-      }
+      "args": ["--from", "servomotor-mcp[serial]", "servomotor-mcp"]
     },
-    "//real-hardware": "To drive real motors, set GEAROTONS_MOTOR_BACKEND=serial and GEAROTONS_SERIAL_PORT=/dev/ttyUSB0, and install with the [serial] extra."
+    "//no-hardware": "To try without any hardware, drop the [serial] extra: the server then runs a simulated bus (two fake motors on port MOCK0)."
   }
 }

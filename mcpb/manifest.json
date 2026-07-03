@@ -3,9 +3,9 @@
   "manifest_version": "0.2",
   "name": "servomotor-mcp",
   "display_name": "Gearotons M17 Servomotor Control",
-  "version": "0.2.0",
-  "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485 — moves, homing, sequences, telemetry. A thin control layer with full range of motion.",
-  "long_description": "The M17 is an open-source, closed-loop NEMA-17 integrated servomotor (motor + driver + controller + encoder in one, daisy-chainable over RS-485). This server exposes 9 tools so Claude can move real hardware: verified on production motors at 0.000° closed-loop repeatability, with full multi-turn range (the server forwards commands straight to the motor; the motor's firmware self-protects against over-current/voltage/temperature). A mock backend lets you try everything with no hardware attached.",
+  "version": "0.3.0",
+  "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485 — discovers your serial ports, auto-detects the motors on the bus, and exposes the firmware's full command set.",
+  "long_description": "The M17 is an open-source, closed-loop NEMA-17 integrated servomotor (motor + driver + controller + encoder in one, daisy-chainable over RS-485). This server lets Claude discover the serial adapters on your machine, auto-detect every motor on the bus (unique ID + alias, nothing hardcoded), and run any command the firmware supports — one MCP tool is generated per command in the servomotor library's catalog (48 as of library 0.10.0), plus high-level move tools with completion waits. Verified on production motors with full multi-turn range; the motor's firmware self-protects against over-current/voltage/temperature. A mock backend lets you try everything with no hardware attached.",
   "author": {
     "name": "Gearotons",
     "email": "info@gearotons.com",
@@ -36,29 +36,31 @@
     "backend": {
       "type": "string",
       "title": "Backend",
-      "description": "'mock' to try without hardware; 'serial' to drive real motors over RS-485.",
-      "enum": ["mock", "serial"],
-      "default": "mock",
+      "description": "'auto' picks the real serial backend when the servomotor library is installed (mock otherwise); or force 'serial' / 'mock'.",
+      "enum": ["auto", "serial", "mock"],
+      "default": "auto",
       "required": true
     },
     "serial_port": {
       "type": "string",
-      "title": "Serial port",
-      "description": "RS-485 adapter port (e.g. /dev/cu.usbserial-210 on macOS, COM3 on Windows). Ignored by the mock backend.",
+      "title": "Default serial port (optional)",
+      "description": "Optional default for the connect tool (e.g. /dev/cu.usbserial-210 on macOS, COM3 on Windows). Normally leave empty — Claude discovers ports with list_serial_ports.",
       "default": "",
       "required": false
     }
   },
   "tools": [
-    { "name": "list_motors", "description": "List configured motors, aliases, and limits" },
-    { "name": "move_to", "description": "Move a motor to an absolute angle (degrees), safety-clamped" },
-    { "name": "move_relative", "description": "Move a motor by a relative angle, safety-clamped" },
-    { "name": "trapezoid_move", "description": "Timed trapezoidal move to an angle over a duration" },
-    { "name": "home", "description": "Home one or all motors (zero reference)" },
-    { "name": "get_status", "description": "Position/telemetry for one or all motors" },
-    { "name": "stop", "description": "Stop one or all motors immediately" },
-    { "name": "reset", "description": "Firmware system reset to recover from faults" },
-    { "name": "run_sequence", "description": "Run a list of move/wait steps as one sequence" }
+    { "name": "list_serial_ports", "description": "Enumerate the machine's serial ports with USB metadata" },
+    { "name": "connect", "description": "Open a serial port and auto-detect the motors on that RS-485 bus" },
+    { "name": "disconnect", "description": "Close the serial port" },
+    { "name": "detect_devices", "description": "Re-scan the bus for motors (reboots the motors on it)" },
+    { "name": "list_motors", "description": "Detected motors with live position/voltage/temperature/status" },
+    { "name": "move_to", "description": "Move a motor to an absolute angle (degrees) and wait for completion" },
+    { "name": "move_relative", "description": "Move a motor by a relative angle and wait for completion" },
+    { "name": "stop", "description": "Emergency-stop one or all motors" },
+    { "name": "get_motor_status", "description": "One motor's snapshot with fatal errors decoded to plain English" },
+    { "name": "run_sequence", "description": "Run a list of move/wait/raw-command steps as one sequence" },
+    { "name": "…full firmware command set", "description": "One tool per command in the servomotor library catalog (48 as of 0.10.0): enable/disable MOSFETs, go_to_position, velocity/acceleration moves, multimove, homing, zeroing, telemetry, PID and current settings, resets, and more" }
   ],
   "compatibility": {
     "platforms": ["darwin", "win32", "linux"],

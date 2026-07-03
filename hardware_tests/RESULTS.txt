@@ -1,49 +1,43 @@
-# Gearotons M17 MCP server — consolidated test results
-# Generated 2026-06-08 against the real motor on /dev/cu.usbserial-210 (alias 88)
+Hardware verification — servomotor-mcp 0.3.0 — 2026-07-03
+Bench: physical M17, fw 0.15.3.0, alias 88, uid 99856389A2B46555, ~20 V supply.
+Host: macOS (darwin), 4x CP2102N USB-RS485 adapters, motor on one of them.
 
-## Unit tests (mock + sequencer; no hardware, no mcp)
-................                                                         [100%]
-16 passed in 0.02s
+hw_discover.py (port sweep)
+  /dev/cu.usbserial-110  -> No motors responded on this bus (graceful note)
+  /dev/cu.usbserial-1420 -> No motors responded on this bus (graceful note)
+  /dev/cu.usbserial-1430 -> No motors responded on this bus (graceful note)
+  /dev/cu.usbserial-210  -> [{"alias": 88, "unique_id": "99856389A2B46555"}]
+  Bluetooth/debug ports enumerated but flagged likely_usb_serial_adapter=false.
 
-## Hardware: basic telemetry + bounded move
-  [ERR] ping (echoes 10-byte payload): SystemExit: 1
-  [ok ] product_info: ['M17     ', 3, [0, 5, 1], 1330, 11062357502496892245, 0]
-  [ok ] firmware_version: [[0, 0, 15, 0], 0]
-  [ok ] product_description: 'Servomotor\x00'
-  [ok ] status: [0, 0]
-  [ok ] supply_voltage: 20200.0
-  [ok ] temperature: 36
-  [ok ] position (deg): -14.499975585937499
-  [ok ] comprehensive_position: [-14.499975585937499, -10.693981933593749, 0.0]
-  [ok ] position after +18 deg: 3.5000244140624996
-  [ok ] position after return: -14.499975585937499
-  net displacement: +0.000 deg (expect ~0)
-MOTION TEST PASSED
+hw_suite.py: 49 passed, 0 failed. Highlights:
+  list_motors: position 0.0 deg, 20.0 V, 41 C, status clean
+  all read-only commands OK (product info "M17", hw 1.5.0, sn 1330, fw 0.15.3.0,
+    specs 31250 Hz / 3276800 counts/rot, hall stats, comm stats, debug values)
+  ping echo "hello mcp" OK
+  move_to 360 -> settled 360.0; move_relative -90 -> 270.0; move by unique id -> 0.0
+  raw go_to_position 90 over 1.5 s -> queue drained -> 89.99978
+  raw trapezoid_move -45 (relative) -> 44.99989
+  multimove [accel +200 dps^2 1 s, accel -200 dps^2 1 s] -> no fatal error
+  vibrate on/off, identify, reset_time -> current time 0.098 s, zero_position -> 0.0
+  set_maximum_velocity 600 dps, set_maximum_acceleration 10000 dps^2 OK
+  emergency_stop, stop() broadcast, disable_mosfets OK
+  system_reset -> rebooted, status clean afterwards
+  run_sequence (move_to + wait + move_relative + raw command + stop) -> 45.0
+  error paths: absent motor 99 -> actionable timeout message; wrong arg count -> clear error
+  re-detect finds the motor again; clean disconnect
 
-## Hardware: SerialBus, thin control layer (MCP tool path)
-  move_to(x, 45) -> pos=45.00° v=20.2V
-  move_to(x, 0) -> pos=0.00° v=20.2V
-  move_to(x, -30) -> pos=-30.00° v=20.2V
---- move_relative (tool path) ---
-  move_relative(+15) -> pos=-15.00°
---- FULL RANGE: command 720° (two turns) — thin layer, no clamp ---
-  move_to(x, 720) -> pos=720.00° v=20.2V
-  motor reached 720.00° (~720 expected) -> FULL RANGE OK ✅
-  move_to(x, 30) -> pos=30.00° v=20.2V
-  move_to(x, -30) -> pos=-30.00° v=20.2V
-  move_to(x, 0) -> pos=0.00° v=20.2V
-  homed x -> 0.00°
-SERIALBUS INTEGRATION TEST PASSED
+hw_mcp_stdio_session.py (official mcp client -> subprocess server, stdio): 10/10
+  clean initialize handshake (library chatter on stderr; stdout pure JSON-RPC)
+  57 tools listed (47 generated from the command catalog + 10 high-level)
+  connect to empty adapter -> graceful "No motors" note
+  connect to right adapter -> auto-detected alias 88
+  move_to 360 via MCP; raw get_temperature via generated tool
+  run_sequence incl. raw command step; get_motor_status healthy
+  connect to nonexistent port -> error lists available ports, keeps old connection
+  stop-all still works after the failed connect; clean disconnect
 
-## Hardware: advanced (identify + repeatability + wave)
---- 1. identify (LED should blink on the motor) ---
-  identify() sent — check the motor LED
-  mean error=0.000°   max error=0.000°   tolerance=0.5°
-ADVANCED TEST PASSED  (max err 0.000° vs tol 0.5°)
+uvx launch (Claude Desktop mechanism):
+  uvx --from '<local path>[serial]' servomotor-mcp -> 57 tools, connect+detect,
+  moves +30/-30 deg OK.
 
-## Hardware: extended (PID err, velocity, throughput, reliability)
---- 1. enable + get_max_pid_error (closed-loop error, in degrees) ---
-  [ok ] max_pid_error [min,max]: [235929.5998901367, -235929.59999999998]
-  20 moves in 7.0s = 2.87 moves/s; worst position error 0.000°
-  5/5 enable+disable cycles clean
-EXTENDED TEST PASSED
+Unit tests (mock backend, no hardware): 39 passed.

@@ -1,0 +1,1167 @@
+[
+    {
+        "CommandString": "Disable MOSFETs",
+        "CommandEnum": 0,
+        "Description": "Disables the MOSFETS (note that MOSFETs are disabled after initial power on).",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Basic Control"
+    },
+    {
+        "CommandString": "Enable MOSFETs",
+        "CommandEnum": 1,
+        "Description": "Enables the MOSFETS.",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Basic Control"
+    },
+    {
+        "CommandString": "Trapezoid move",
+        "CommandEnum": 2,
+        "Description": "Move immediately to the given position using the currently set speed (the speed is set by a separate command)",
+        "Input": [
+            {
+                "Description": "i32: The displacement to travel. Can be positive or negative.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "displacement",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "u32: The time over which to do the move.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "duration",
+                "UnitConversion": {
+                    "Type": "time",
+                    "InternalUnit": "timesteps",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Motion Control"
+    },
+    {
+        "CommandString": "Set maximum velocity",
+        "CommandEnum": 3,
+        "Description": "Sets maximum velocity (this is not used at this time)",
+        "Input": [
+            {
+                "Description": "u32: Maximum velocity.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "maximumVelocity",
+                "UnitConversion": {
+                    "Type": "velocity",
+                    "InternalUnit": "counts_per_timestep",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Go to position",
+        "CommandEnum": 4,
+        "Description": "Move to this new given position in the amount of time specified. Acceleration and deceleration will be applied to make the move smooth.",
+        "Input": [
+            {
+                "Description": "i32: New absolute position value.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "position",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "u32: Time allowed for executing the move.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "duration",
+                "UnitConversion": {
+                    "Type": "time",
+                    "InternalUnit": "timesteps",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Motion Control"
+    },
+    {
+        "CommandString": "Set maximum acceleration",
+        "CommandEnum": 5,
+        "Description": "Sets max acceleration",
+        "Input": [
+            {
+                "Description": "u32: The maximum acceleration.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "maximumAcceleration",
+                "UnitConversion": {
+                    "Type": "acceleration",
+                    "InternalUnit": "counts_per_timestep_squared",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Start calibration",
+        "CommandEnum": 6,
+        "Description": "Starts a calibration, which will determine the average values of the hall sensors and will determine if they are working correctly",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Capture hall sensor data",
+        "CommandEnum": 7,
+        "Description": "Start sending hall sensor data (work in progress; don't send this command)",
+        "Input": [
+            {
+                "Description": "u8: Indicates the type of data to capture. Currently 1 to 3 are valid.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "captureType"
+            },
+            {
+                "Description": "u32: Number of points to read back from the device",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "nPointsToRead"
+            },
+            {
+                "Description": "u8: Channels to capture bitmask. The first three bits are valid, which will turn on (0) or turn off (0) that hall sensor channel",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "channelsToCaptureBitmask"
+            },
+            {
+                "Description": "u16: Aquire a sample every this number of time steps. Time steps happen at the update frequency, which can be read with the Get product specs command",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "timeStepsPerSample"
+            },
+            {
+                "Description": "u16: Number of samples to sum together to make one point to transmit back",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "nSamplesToSum"
+            },
+            {
+                "Description": "u16: Division factor to apply to the sum of the samples to scale it down before transmitting it so that it fits into the returned data type, which is a 16-bit number per each hall sensor",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "divisionFactor"
+            }
+        ],
+        "Output": [
+            {
+                "Description": "general_data: The data of the hall sensors after suming and averaging",
+                "TooltipDisplayFormat": "",
+                "ParameterName": "data"
+            }
+        ],
+        "CommandGroup": "Other"
+    },
+    {
+        "CommandString": "Reset time",
+        "CommandEnum": 8,
+        "Description": "Resets the absolute time to zero (call this first before issuing any movement commands)",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Basic Control"
+    },
+    {
+        "CommandString": "Get current time",
+        "CommandEnum": 9,
+        "Description": "Gets the current absolute time",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "u64: The current absolute time in microseconds",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "currentTime",
+                "UnitConversion": {
+                    "Type": "time",
+                    "InternalUnit": "microseconds",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Time sync",
+        "CommandEnum": 10,
+        "Description": "Sends the master time to the motor so that it can sync its own clock (do this 10 times per second).",
+        "Input": [
+            {
+                "Description": "u32: The motor absolute time that the motor should sync to (in microseconds).",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "masterTime",
+                "UnitConversion": {
+                    "Type": "time",
+                    "InternalUnit": "microseconds",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": [
+            {
+                "Description": "i32: The error in the motor's time compared to the master time.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "timeError"
+            },
+            {
+                "Description": "u16: The contents of the RCC-ICSCR register (holds the HSICAL and HSITRIM settings).",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "rccIcscr"
+            }
+        ],
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Get n queued items",
+        "CommandEnum": 11,
+        "Description": "Get the number of items currently in the movement queue (if this gets too large, don't queue any more movement commands)",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "u8: The number of items in the movement queue. This command will return between 0 and 32. If less than 32, you can add more items to the queue to continue the movements in order without stopping.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "queueSize"
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Emergency stop",
+        "CommandEnum": 12,
+        "Description": "Emergency stop (stop all movement, disable MOSFETS, clear the queue)",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Basic Control"
+    },
+    {
+        "CommandString": "Zero position",
+        "CommandEnum": 13,
+        "Description": "Make the current position the position zero (origin)",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Basic Control"
+    },
+    {
+        "CommandString": "Homing",
+        "CommandEnum": 14,
+        "Description": "Homing (or in other words, move until a crash and then stop immediately)",
+        "Input": [
+            {
+                "Description": "i32: The maximum distance to move (if a crash does not occur). This can be positive or negative. the sign determines the direction of movement.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "maxDistance",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "u32: The maximum time to allow for homing. Make sure to give enough time for the motor to cover the maximum distance or the motor may move too fast or throw a fatal error.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "maxDuration",
+                "UnitConversion": {
+                    "Type": "time",
+                    "InternalUnit": "timesteps",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Motion Control"
+    },
+    {
+        "CommandString": "Get hall sensor position",
+        "CommandEnum": 15,
+        "Description": "Get the position as measured by the hall sensors (this should be the actual position of the motor and if everything is ok then it will be about the same as the desired position)",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "i64: The current position as determined by the hall sensors",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "hallSensorPosition",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Get status",
+        "CommandEnum": 16,
+        "Description": "Gets the status of the motor",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "u16: A series of flags which are 1 bit each",
+                "Bit descriptions": [
+                    "Bit 0: In the bootloader (if this flag is set then the other flags below will all be 0)",
+                    "Bit 1: MOSFETs are enabled",
+                    "Bit 2: Motor is in closed loop mode",
+                    "Bit 3: Motor is currently executing the calibration command",
+                    "Bit 4: Motor is currently executing a homing command",
+                    "Bit 5: Motor is currently executing the procedure to go to closed loop mode",
+                    "Bit 6: Motor is currently busy doing a time consuming task and is not ready to take another command",
+                    "Bit 7: Not used, set to 0",
+                    "Bit 8: Not used, set to 0",
+                    "Bit 9: Not used, set to 0",
+                    "Bit 10: Not used, set to 0",
+                    "Bit 11: Not used, set to 0",
+                    "Bit 12: Not used, set to 0",
+                    "Bit 13: Not used, set to 0",
+                    "Bit 14: Not used, set to 0",
+                    "Bit 15: Not used, set to 0"
+                ],
+                "TooltipDisplayFormat": "%b",
+                "ParameterName": "statusFlags"
+            },
+            {
+                "Description": "u8: The fatal error code. If 0 then there is no fatal error. Once a fatal error happens, the motor becomes disabled and cannot do much anymore until reset. You can press the reset button on the motor or you can execute the System reset command to get out of the fatal error state.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "fatalErrorCode"
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Go to closed loop",
+        "CommandEnum": 17,
+        "Description": "Go to closed loop position control mode",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Motion Control"
+    },
+    {
+        "CommandString": "Get product specs",
+        "CommandEnum": 18,
+        "Description": "Get the update frequency (reciprocal of the time step)",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "u32: Update frequency in Hz. This is how often the motor executes all calculations for hall sensor position, movement, PID loop, safety, etc.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "updateFrequency"
+            },
+            {
+                "Description": "u32: Counts per rotation. When commanding the motor or when reading back position, this is the number of counts per one shaft rotation.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "countsPerRotation"
+            }
+        ],
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Move with acceleration",
+        "CommandEnum": 19,
+        "Description": "Rotates the motor with the specified acceleration",
+        "Input": [
+            {
+                "Description": "i32: The acceleration (the unit is microsteps per time step per time step * 2^24).",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "acceleration",
+                "UnitConversion": {
+                    "Type": "acceleration",
+                    "InternalUnit": "counts_per_timestep_squared",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "u32: The number of time steps to apply this acceleration. Use command 18 to get the frequency of the time steps. After this many time steps, the acceleration will go to zero and velocity will be maintained.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "timeSteps",
+                "UnitConversion": {
+                    "Type": "time",
+                    "InternalUnit": "timesteps",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Motion Control"
+    },
+    {
+        "CommandString": "Detect devices",
+        "CommandEnum": 20,
+        "Description": "Detect all of the devices that are connected on the RS485 interface. Devices will identify themselves at a random time within one seconde. Chance of collision is possible but unlikely. You can repeat this if you suspect a collision (like if you have devices connected but they were not discovered within one to two seconds).",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "u64_unique_id: A unique ID (unique among all devices manufactured). The response is sent after a random delay of between 0 and 1 seconds.",
+                "TooltipDisplayFormat": "",
+                "ParameterName": "uniqueId"
+            },
+            {
+                "Description": "u8_alias: The alias of the device that has this unique ID.",
+                "TooltipDisplayFormat": "%d,%c",
+                "ParameterName": "alias"
+            }
+        ],
+        "MultipleResponses": true,
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Set device alias",
+        "CommandEnum": 21,
+        "Description": "Sets device alias",
+        "Input": [
+            {
+                "Description": "u8_alias: The alias (which is a one byte ID) ranging from 0 to 251. It cannot be 252 to 254 because those are reserved. You can set it to 255, which will remove the alias.",
+                "TooltipDisplayFormat": "%d,%c",
+                "ParameterName": "alias"
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Get product info",
+        "CommandEnum": 22,
+        "Description": "Get product information",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "string8: The product code / model number (when doing a firmware upgrade, this must match between the firmware file and the target device).",
+                "TooltipDisplayFormat": "%s",
+                "ParameterName": "productCode"
+            },
+            {
+                "Description": "u8: A firmware compatibility code (when doing a firmware upgrade, this must match between the firmware file and the target device).",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "firmwareCompatibility"
+            },
+            {
+                "Description": "u24_version_number: The hardware version stored as 3 bytes. The first byte is the patch version, followed by the minor and major versions.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "hardwareVersion"
+            },
+            {
+                "Description": "u32: The serial number.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "serialNumber"
+            },
+            {
+                "Description": "u64_unique_id: The unique ID for the product.",
+                "TooltipDisplayFormat": "%x",
+                "ParameterName": "uniqueId"
+            },
+            {
+                "Description": "u32: Not currently used.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "reserved"
+            }
+        ],
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Firmware upgrade",
+        "CommandEnum": 23,
+        "Description": "This command will upgrade the flash memory of the servo motor. Before issuing a firmware upgrade command, you must do some calculations as shown in the examples.",
+        "Input": [
+            {
+                "Description": "firmware_page: The data to upgrade one page of flash memory. Contents includes the product model code (8 bytes), firmware compatibility code (1 byte), page number (1 byte), and the page data itself (2048 bytes).",
+                "ParameterName": "firmwarePage"
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Get product description",
+        "CommandEnum": 24,
+        "Description": "Get the product description.",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "string_null_term: This is a brief description of the product.",
+                "TooltipDisplayFormat": "%s",
+                "ParameterName": "productDescription"
+            }
+        ],
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Get firmware version",
+        "CommandEnum": 25,
+        "Description": "Get the firmware version or the bootloader version depending on what mode we are in. This command also returns the status bits, where the least significan bit teels us if we are currently in the bootloader (=1) or the main firmware (=0)",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "u32_version_number: The firmware version stored as 4 bytes. The first byte is the development number, then patch version, followed by the minor and major versions.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "firmwareVersion"
+            },
+            {
+                "Description": "u8: A flag that tells us if we are in the bootloader (=1) or in the reguslar firmware (=0)",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "inBootloader"
+            }
+        ],
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Move with velocity",
+        "CommandEnum": 26,
+        "Description": "Rotates the motor with the specified velocity.",
+        "Input": [
+            {
+                "Description": "i32: The velocity (the unit is microsteps per time step * 2^20).",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "velocity",
+                "UnitConversion": {
+                    "Type": "velocity",
+                    "InternalUnit": "counts_per_timestep",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "u32: The time to maintain this velocity.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "duration",
+                "UnitConversion": {
+                    "Type": "time",
+                    "InternalUnit": "timesteps",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Motion Control"
+    },
+    {
+        "CommandString": "System reset",
+        "CommandEnum": 27,
+        "Description": "System reset / go to the bootloader. The motor will reset immediately and will enter the bootloader. If there is no command sent within a short time, the motor will exit the bootloader and run the application from the beginning.",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Basic Control"
+    },
+    {
+        "CommandString": "Set maximum motor current",
+        "CommandEnum": 28,
+        "Description": "Set the maximum motor current and maximum regeneration current. The values take effect immediately but are not saved to non-volatile memory, so they revert to the firmware default after a reset.",
+        "Input": [
+            {
+                "Description": "u16: The motor current. The units are some arbitrary units and not amps. A value of 150 or 200 is suitable.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorCurrent",
+                "UnitConversion": {
+                    "Type": "current",
+                    "InternalUnit": "arbitrary_units",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "u16: The motor regeneration current (while it is braking). This parameter is currently not used for anything.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "regenerationCurrent",
+                "UnitConversion": {
+                    "Type": "current",
+                    "InternalUnit": "arbitrary_units",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Multimove",
+        "CommandEnum": 29,
+        "Description": "The multimove command allows you to compose multiple moves one after another. Please note that when the queue becomes empty after all the moves are executed and the motor is not at a standstill then a fatal error will be triggered.",
+        "Input": [
+            {
+                "Description": "u8: Specify how many moves are being communicated in this one shot.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "moveCount"
+            },
+            {
+                "Description": "u32: Each bit specifies if the move is a (bit = 0) MOVE_WITH_ACCELERATION_COMMAND or a (bit = 1) MOVE_WITH_VELOCITY_COMMAND.",
+                "TooltipDisplayFormat": "%b",
+                "ParameterName": "moveTypes"
+            },
+            {
+                "Description": "list_2d: A 2D list in Python format (list of lists). Each item in the list is of type [i32, u32] representing a series of move commands. Each move command specifies the acceleration to move at or the velocity to instantly change to (according to the bits above) and the number of time steps over which this command is to be executed. For example: '[[100, 30000], [-200, 60000]]'. There is a limit of 32 move commands that can be listed in this one multi-move command. Each of the moves takes up one queue spot, so make sure there is enough space in the queue to store all of the commands.",
+                "TooltipDisplayFormat": "",
+                "ParameterName": "moveList",
+                "UnitConversion": {
+                    "Type": "mixed_acceleration_velocity_time",
+                    "InternalUnit": "mixed_acceleration_velocity_time",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Motion Control"
+    },
+    {
+        "CommandString": "Set safety limits",
+        "CommandEnum": 30,
+        "Description": "Set safety limits (to prevent motion from exceeding set bounds)",
+        "Input": [
+            {
+                "Description": "i64: The lower limit in microsteps.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "lowerLimit",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "i64: The upper limit in microsteps.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "upperLimit",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Ping",
+        "CommandEnum": 31,
+        "Description": "Send a payload containing any data and the device will respond with the same data back",
+        "Input": [
+            {
+                "Description": "buf10: Any binary data payload to send to the device.",
+                "TooltipDisplayFormat": "%s",
+                "ParameterName": "pingData"
+            }
+        ],
+        "Output": [
+            {
+                "Description": "buf10: The same data that was sent to the device will be returned if all went well.",
+                "TooltipDisplayFormat": "%s",
+                "ParameterName": "responsePayload"
+            }
+        ],
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Control hall sensor statistics",
+        "CommandEnum": 32,
+        "Description": "Turn on or off the gathering of statistics for the hall sensors and reset the statistics",
+        "Input": [
+            {
+                "Description": "u8: 0 = turn off statistics gathering, 1 = reset statistics and turn on gathering.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "control"
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Get hall sensor statistics",
+        "CommandEnum": 33,
+        "Description": "Read back the statistics gathered from the hall sensors. Useful for checking the hall sensor health and noise in the system.",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "u16: The maximum value of hall sensor 1 encoutered since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "maxHall1"
+            },
+            {
+                "Description": "u16: The maximum value of hall sensor 2 encoutered since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "maxHall2"
+            },
+            {
+                "Description": "u16: The maximum value of hall sensor 3 encoutered since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "maxHall3"
+            },
+            {
+                "Description": "u16: The minimum value of hall sensor 1 encoutered since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "minHall1"
+            },
+            {
+                "Description": "u16: The minimum value of hall sensor 2 encoutered since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "minHall2"
+            },
+            {
+                "Description": "u16: The minimum value of hall sensor 3 encoutered since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "minHall3"
+            },
+            {
+                "Description": "u64: The sum of hall sensor 1 values collected since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "sumHall1"
+            },
+            {
+                "Description": "u64: The sum of hall sensor 2 values collected since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "sumHall2"
+            },
+            {
+                "Description": "u64: The sum of hall sensor 3 values collected since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "sumHall3"
+            },
+            {
+                "Description": "u32: The number of times the hall sensors were measured since the last statistics reset.",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "measurementCount"
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Get position",
+        "CommandEnum": 34,
+        "Description": "Get the current desired position (which may differ a bit from the actual position as measured by the hall sensors)",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "i64: The current desired position",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "position",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Read multipurpose buffer",
+        "CommandEnum": 35,
+        "Description": "Read whatever is in the multipurpose buffer (the buffer is used for data generated during calibration, going to closed loop mode, and when capturing hall sensor data)",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "general_data: The data in the buffer (the format and length of the data depends on what was put in the buffer)",
+                "TooltipDisplayFormat": "",
+                "ParameterName": "bufferData"
+            }
+        ],
+        "CommandGroup": "Other"
+    },
+    {
+        "CommandString": "Test mode",
+        "CommandEnum": 36,
+        "Description": "Set or trigger a certain test mode. This is a bit undocumented at the moment. Don't use this unless you are a developer working on test cases. Notable modes: 0 = clear all test modes; 1-9 = motor test modes; 10-13 = LED test modes (locks up the device); 14-73 = trigger fatal errors 0-59; 74 = set the overvoltage-protection threshold to 22 V (production test, should trip on a 24 V supply); 75 = set the overvoltage-protection threshold to 26 V (production test, should not trip on a 24 V supply). A system reset restores the default overvoltage threshold.",
+        "Input": [
+            {
+                "Description": "u8: The test mode to use or trigger",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "testMode"
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Get comprehensive position",
+        "CommandEnum": 37,
+        "Description": "Get the desired motor position, hall sensor position, and external encoder position all in one shot",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "i64: The commanded position (which may differ from actual)",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "commandedPosition",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "i64: The hall sensor position (or you could say the actual measured position)",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "hallSensorPosition",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "i32: The external encoder position. This needs special hardware attached to the motor to work",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "externalEncoderPosition",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Get supply voltage",
+        "CommandEnum": 38,
+        "Description": "Get the measured voltage of the power supply.",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "u16: The voltage. Divide this number by 10 to get the actual voltage in volts.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "supplyVoltage",
+                "UnitConversion": {
+                    "Type": "voltage",
+                    "InternalUnit": "decivolts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Get max PID error",
+        "CommandEnum": 39,
+        "Description": "Get the minimum and maximum error value ovserved in the PID control loop since the last read.",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "i32: The minimum PID error value.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "minPidError",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            },
+            {
+                "Description": "i32: The maximum PID error value.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "maxPidError",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Vibrate",
+        "CommandEnum": 40,
+        "Description": "Cause the motor to start to vary the voltage quickly and therefore to vibrate (or stop).",
+        "Input": [
+            {
+                "Description": "u8: Vibration level (0 = turn off, 1 = turn on).",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "vibrationLevel"
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Identify",
+        "CommandEnum": 41,
+        "Description": "Identify your motor by sending this command. The motor's green LED will flash rapidly for 3 seconds.",
+        "Input": null,
+        "Output": "success_response",
+        "CommandGroup": "Device Management"
+    },
+    {
+        "CommandString": "Get temperature",
+        "CommandEnum": 42,
+        "Description": "Get the measured temperature of the motor.",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "i16: The temperature in degrees celcius. The accuracy is about +/- 3 degrees celcius and is measured at the motor driver PCB.",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "temperature",
+                "UnitConversion": {
+                    "Type": "temperature",
+                    "InternalUnit": "celsius",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "Set PID constants",
+        "CommandEnum": 43,
+        "Description": "Set PID constants for the control loop that will try to maintain the motion trajectory.",
+        "Input": [
+            {
+                "Description": "u32: The proportional term constant (P)",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "kP"
+            },
+            {
+                "Description": "u32: The integral term constant (I)",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "kI"
+            },
+            {
+                "Description": "u32: The differential term constant (D)",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "kD"
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Set max allowable position deviation",
+        "CommandEnum": 44,
+        "Description": "Set the amount of microsteps that the actual motor position (as measured by the hall sensors) is allowed to deviate from the desired position. Throw a fatal error if this is exceeded.",
+        "Input": [
+            {
+                "Description": "i64: The new maximum allowable position deviation setting",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "maxAllowablePositionDeviation",
+                "UnitConversion": {
+                    "Type": "position",
+                    "InternalUnit": "encoder_counts",
+                    "ConversionFactorsFile": "unit_conversions_{motor_type}.json"
+                }
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Get debug values",
+        "CommandEnum": 45,
+        "Description": "Get debug values including motor control parameters, profiler times, hall sensor data, and other diagnostic information.",
+        "Input": null,
+        "Output": [
+            {
+                "Description": "i64: Maximum acceleration setting",
+                "TooltipDisplayFormat": "%lld",
+                "ParameterName": "maxAcceleration"
+            },
+            {
+                "Description": "i64: Maximum velocity setting",
+                "TooltipDisplayFormat": "%lld",
+                "ParameterName": "maxVelocity"
+            },
+            {
+                "Description": "i64: Current velocity",
+                "TooltipDisplayFormat": "%lld",
+                "ParameterName": "currentVelocity"
+            },
+            {
+                "Description": "i32: Measured velocity",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "measuredVelocity"
+            },
+            {
+                "Description": "u32: Number of time steps left in the current move",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "nTimeSteps"
+            },
+            {
+                "Description": "i64: Debug value 1",
+                "TooltipDisplayFormat": "%lld",
+                "ParameterName": "debugValue1"
+            },
+            {
+                "Description": "i64: Debug value 2",
+                "TooltipDisplayFormat": "%lld",
+                "ParameterName": "debugValue2"
+            },
+            {
+                "Description": "i64: Debug value 3",
+                "TooltipDisplayFormat": "%lld",
+                "ParameterName": "debugValue3"
+            },
+            {
+                "Description": "i64: Debug value 4",
+                "TooltipDisplayFormat": "%lld",
+                "ParameterName": "debugValue4"
+            },
+            {
+                "Description": "u16: All motor control calculations profiler time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "allMotorControlCalculationsProfilerTime"
+            },
+            {
+                "Description": "u16: All motor control calculations profiler maximum time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "allMotorControlCalculationsProfilerMaxTime"
+            },
+            {
+                "Description": "u16: Get sensor position profiler time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "getSensorPositionProfilerTime"
+            },
+            {
+                "Description": "u16: Get sensor position profiler maximum time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "getSensorPositionProfilerMaxTime"
+            },
+            {
+                "Description": "u16: Compute velocity profiler time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "computeVelocityProfilerTime"
+            },
+            {
+                "Description": "u16: Compute velocity profiler maximum time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "computeVelocityProfilerMaxTime"
+            },
+            {
+                "Description": "u16: Motor movement calculations profiler time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorMovementCalculationsProfilerTime"
+            },
+            {
+                "Description": "u16: Motor movement calculations profiler maximum time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorMovementCalculationsProfilerMaxTime"
+            },
+            {
+                "Description": "u16: Motor phase calculations profiler time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorPhaseCalculationsProfilerTime"
+            },
+            {
+                "Description": "u16: Motor phase calculations profiler maximum time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorPhaseCalculationsProfilerMaxTime"
+            },
+            {
+                "Description": "u16: Motor control loop period profiler time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorControlLoopPeriodProfilerTime"
+            },
+            {
+                "Description": "u16: Motor control loop period profiler maximum time",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorControlLoopPeriodProfilerMaxTime"
+            },
+            {
+                "Description": "u16: Hall sensor 1 voltage",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "hallSensor1Voltage"
+            },
+            {
+                "Description": "u16: Hall sensor 2 voltage",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "hallSensor2Voltage"
+            },
+            {
+                "Description": "u16: Hall sensor 3 voltage",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "hallSensor3Voltage"
+            },
+            {
+                "Description": "u32: Commutation position offset",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "commutationPositionOffset"
+            },
+            {
+                "Description": "u8: Motor phases reversed flag",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorPhasesReversed"
+            },
+            {
+                "Description": "i32: Maximum hall position delta",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "maxHallPositionDelta"
+            },
+            {
+                "Description": "i32: Minimum hall position delta",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "minHallPositionDelta"
+            },
+            {
+                "Description": "i32: Average hall position delta",
+                "TooltipDisplayFormat": "%d",
+                "ParameterName": "averageHallPositionDelta"
+            },
+            {
+                "Description": "u8: Motor PWM voltage",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "motorPwmVoltage"
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    },
+    {
+        "CommandString": "CRC32 control",
+        "CommandEnum": 46,
+        "Description": "Enable or disable CRC32 checking for commands",
+        "Input": [
+            {
+                "Description": "u8: Control value (1 to enable, 0 to disable CRC32 checking)",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "enableCrc32"
+            }
+        ],
+        "Output": "success_response",
+        "CommandGroup": "Configuration"
+    },
+    {
+        "CommandString": "Get communication statistics",
+        "CommandEnum": 47,
+        "Description": "Get and optionally reset the CRC32 error counter",
+        "Input": [
+            {
+                "Description": "u8: Reset flag (1 to reset the counter after reading, 0 to just read)",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "resetCounter"
+            }
+        ],
+        "Output": [
+            {
+                "Description": "u32: Number of CRC32 errors detected",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "crc32ErrorCount"
+            },
+            {
+                "Description": "u32: Number of packet decode errors detected",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "packetDecodeErrorCount"
+            },
+            {
+                "Description": "u32: Number of times that the first bit in the first byte of a packet was not 1 as expected",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "firstBitErrorCount"
+            },
+            {
+                "Description": "u32: Number of framing errors detected during reception from the RS485 interface",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "framingErrorCount"
+            },
+            {
+                "Description": "u32: Number of overrun errors detected during reception from the RS485 interface",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "overrunErrorCount"
+            },
+            {
+                "Description": "u32: Number of noise errors detected during reception from the RS485 interface",
+                "TooltipDisplayFormat": "%u",
+                "ParameterName": "noiseErrorCount"
+            }
+        ],
+        "CommandGroup": "Status & Monitoring"
+    }
+]

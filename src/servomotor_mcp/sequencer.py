@@ -6,14 +6,19 @@ and hardware-tested with a real motor without importing the `mcp` SDK. Steps are
 straight to the bus, in order.
 
 Step shapes:
-    {"action": "move_to",        "motor": "x", "degrees": 90, "speed": 120}
-    {"action": "move_relative",  "motor": "y", "degrees": -30}
-    {"action": "trapezoid_move", "motor": "z", "degrees": 45, "duration_s": 1.5}
-    {"action": "home",           "motor": "x"}     # motor optional -> all
-    {"action": "stop"}                              # motor optional -> all
+    {"action": "move_to",       "motor": "88", "degrees": 90, "speed_dps": 120}
+    {"action": "move_relative", "motor": "88", "degrees": -30}
+    {"action": "stop"}                                   # motor optional -> all
+    {"action": "wait",          "seconds": 0.5}
+    {"action": "command",       "motor": "88", "name": "vibrate", "params": [1]}
+
+"command" runs any command from the library catalog by tool name (params positional,
+same order as the generated tool's parameters).
 """
 
 from __future__ import annotations
+
+import time
 
 
 def run_sequence_steps(bus, steps: list[dict]) -> None:
@@ -22,14 +27,14 @@ def run_sequence_steps(bus, steps: list[dict]) -> None:
         action = step.get("action")
         motor = step.get("motor")
         if action == "move_to":
-            bus.move_to(motor, float(step["degrees"]), step.get("speed"))
+            bus.move_to(motor, float(step["degrees"]), step.get("speed_dps") or step.get("speed"))
         elif action == "move_relative":
-            bus.move_relative(motor, float(step["degrees"]), step.get("speed"))
-        elif action == "trapezoid_move":
-            bus.trapezoid_move(motor, float(step["degrees"]), float(step["duration_s"]))
-        elif action == "home":
-            bus.home(motor)
+            bus.move_relative(motor, float(step["degrees"]), step.get("speed_dps") or step.get("speed"))
         elif action == "stop":
             bus.stop(motor)
+        elif action == "wait":
+            time.sleep(max(0.0, float(step.get("seconds", 0))))
+        elif action == "command":
+            bus.execute(motor, step["name"], list(step.get("params", [])))
         else:
             raise ValueError(f"step {i}: unknown action {action!r}")

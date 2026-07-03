@@ -1,4 +1,4 @@
-"""Sequencer tests on the mock backend (no hardware, no mcp)."""
+"""Sequence engine against the mock backend."""
 
 import pytest
 
@@ -6,35 +6,34 @@ from servomotor_mcp.motors import MockBus
 from servomotor_mcp.sequencer import run_sequence_steps
 
 
-def test_sequence_runs_in_order():
-    bus = MockBus(aliases=("x", "y"))
+@pytest.fixture()
+def bus():
+    b = MockBus()
+    b.connect(port="MOCK0")
+    return b
+
+
+def test_square_wave_sequence(bus):
     run_sequence_steps(bus, [
-        {"action": "move_to", "motor": "x", "degrees": 45},
-        {"action": "move_to", "motor": "y", "degrees": 30},
-        {"action": "move_relative", "motor": "x", "degrees": -10},
-    ])
-    assert bus.get_status("x")[0].position_deg == 35
-    assert bus.get_status("y")[0].position_deg == 30
-
-
-def test_sequence_allows_full_multiturn_moves():
-    # No clamping: a multi-turn target is executed as-is.
-    bus = MockBus(aliases=("x",))
-    run_sequence_steps(bus, [{"action": "move_to", "motor": "x", "degrees": 720}])
-    assert bus.get_status("x")[0].position_deg == 720
-
-
-def test_unknown_action_raises():
-    bus = MockBus(aliases=("x",))
-    with pytest.raises(ValueError, match="unknown action"):
-        run_sequence_steps(bus, [{"action": "fly", "motor": "x"}])
-
-
-def test_home_and_stop_steps():
-    bus = MockBus(aliases=("x", "y"))
-    run_sequence_steps(bus, [
-        {"action": "move_to", "motor": "x", "degrees": 50},
-        {"action": "home"},
+        {"action": "move_to", "motor": "42", "degrees": 90, "speed_dps": 120},
+        {"action": "move_relative", "motor": "42", "degrees": -30},
+        {"action": "wait", "seconds": 0},
+        {"action": "move_to", "motor": "43", "degrees": 720},  # multi-turn passthrough
         {"action": "stop"},
     ])
-    assert all(m.position_deg == 0 for m in bus.get_status())
+    assert bus.motor_status("42")["position_deg"] == 60.0
+    assert bus.motor_status("43")["position_deg"] == 720.0
+
+
+def test_raw_command_step(bus):
+    run_sequence_steps(bus, [
+        {"action": "command", "motor": "42", "name": "zero_position", "params": []},
+        {"action": "command", "motor": "42", "name": "enable_mosfets", "params": []},
+        {"action": "command", "motor": "42", "name": "go_to_position", "params": [45, 1.0]},
+    ])
+    assert bus.motor_status("42")["position_deg"] == 45.0
+
+
+def test_unknown_action_raises(bus):
+    with pytest.raises(ValueError, match="unknown action"):
+        run_sequence_steps(bus, [{"action": "teleport"}])
