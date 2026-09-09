@@ -17,6 +17,11 @@ MCP tool automatically (48 commands as of library 0.10.0), plus a few high-level
 for everyday moves. It ships with a **mock backend**, so you can try the whole thing with
 **no hardware**.
 
+<p align="center">
+  <img src="docs/demo-terminal-replay.gif" alt="Claude Code driving a real Gearotons M17 over MCP: find the motor, turn it two rotations, back, read the encoder" width="800">
+</p>
+<p align="center"><a href="https://github.com/Gearotons/servomotor-mcp/releases/download/v0.3.1/M17-claude-code-demo.mp4">▶ 50-second video: the real motor and this session side by side</a> — recorded 2026-09-09 on a bench M17; every line above is from the session log.</p>
+
 > The first servomotor with an official MCP server. Open hardware, open firmware, open
 > software — and now an open, AI-native control interface.
 
