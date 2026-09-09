@@ -1,10 +1,9 @@
 {
-  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
-  "_comment": "MCP Registry entry. Verify the current schema version + field names with `mcp-publisher` (the schema evolves). Namespace uses the GitHub-owned form io.github.<owner>/<repo>, which the registry verifies via the repo. Publish only after the GitHub repo is public and the PyPI package is live.",
-  "name": "io.github.gearotons/servomotor-mcp",
-  "description": "Drive Gearotons M17 open-source servomotors from natural language over RS-485. Discovers serial ports, auto-detects motors on the bus, and exposes the motor firmware's full command set as MCP tools. Ships a mock backend (no hardware needed).",
-  "status": "active",
-  "version": "0.3.0",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Gearotons/servomotor-mcp",
+  "title": "Gearotons M17 Servomotor",
+  "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485; mock mode, no hardware.",
+  "version": "0.3.1",
   "repository": {
     "url": "https://github.com/Gearotons/servomotor-mcp",
     "source": "github"
@@ -13,9 +12,12 @@
   "packages": [
     {
       "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
       "identifier": "servomotor-mcp",
-      "version": "0.3.0",
-      "transport": { "type": "stdio" },
+      "version": "0.3.1",
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": [
         {
           "name": "GEAROTONS_MOTOR_BACKEND",
@@ -25,7 +27,7 @@
         },
         {
           "name": "GEAROTONS_SERIAL_PORT",
-          "description": "Optional default port for the connect tool (e.g. /dev/cu.usbserial-210, /dev/ttyUSB0, COM3). Normally unnecessary — the model discovers ports with list_serial_ports.",
+          "description": "Optional default port for the connect tool (e.g. /dev/cu.usbserial-210, /dev/ttyUSB0, COM3). Normally unnecessary: the model discovers ports with list_serial_ports.",
           "isRequired": false
         },
         {

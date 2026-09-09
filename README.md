@@ -1,5 +1,7 @@
 # servomotor-mcp
 
+<!-- mcp-name: io.github.Gearotons/servomotor-mcp -->
+
 **Drive open-source [Gearotons M17](https://gearotons.com) servomotors from natural language.**
 
 An [MCP](https://modelcontextprotocol.io) server that exposes the M17 — a NEMA-17
