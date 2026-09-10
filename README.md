@@ -22,6 +22,8 @@ for everyday moves. It ships with a **mock backend**, so you can try the whole t
 </p>
 <p align="center"><a href="https://github.com/Gearotons/servomotor-mcp/releases/download/v0.3.1/M17-claude-code-demo.mp4">▶ 50-second video: the real motor and this session side by side</a> — recorded 2026-09-09 on a bench M17; every line above is from the session log.</p>
 
+<p align="center">Step-by-step tutorial (boxed motor to "talk to it" in about twenty minutes): <a href="https://www.hackster.io/gearotons/talk-to-a-servomotor-from-claude-code-20-min-20-motor-2f6bb9">Talk to a servomotor from Claude Code</a> on Hackster.</p>
+
 > The first servomotor with an official MCP server. Open hardware, open firmware, open
 > software — and now an open, AI-native control interface.
 
