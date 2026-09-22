@@ -150,8 +150,9 @@ def stop(motor: str | None = None) -> dict:
     """Immediately halt one motor, or ALL motors if ``motor`` is omitted.
 
     Use for "stop", "halt", or any sign something is wrong. Sends the firmware's
-    emergency stop: motion halts and the move queue empties; holding torque remains.
-    Use ``disable_mosfets`` afterwards to let the shaft spin freely.
+    emergency stop: the driver outputs turn OFF and the move queue empties, so there is
+    NO holding torque afterwards and a load can move the shaft. Send ``enable_mosfets``
+    before commanding the next move.
     """
     return _bus.stop(motor)
 

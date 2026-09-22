@@ -40,3 +40,11 @@ def test_list_serial_ports_carries_the_notice_on_the_simulator(monkeypatch):
     assert out.get("notice", "").startswith("SIMULATED MOTORS")
     res = server.connect(port="MOCK0")
     assert res.get("notice", "").startswith("SIMULATED MOTORS")
+
+
+def test_stop_tool_tells_the_model_there_is_no_holding_torque():
+    """The firmware's emergency_stop() calls disable_mosfets(); the model-facing text must say so."""
+    from servomotor_mcp import server
+    doc = server.stop.__doc__ or ""
+    assert "holding torque remains" not in doc
+    assert "NO holding torque" in doc

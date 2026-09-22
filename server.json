@@ -3,7 +3,7 @@
   "name": "io.github.Gearotons/servomotor-mcp",
   "title": "Gearotons M17 Servomotor",
   "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485; mock mode, no hardware.",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "repository": {
     "url": "https://github.com/Gearotons/servomotor-mcp",
     "source": "github"
@@ -14,7 +14,7 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "servomotor-mcp",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "transport": {
         "type": "stdio"
       },
