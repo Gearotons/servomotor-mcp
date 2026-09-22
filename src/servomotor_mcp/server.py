@@ -58,7 +58,10 @@ def list_serial_ports() -> dict:
     detected; it is cheap to connect to another port and look again. Relay the options
     to the user in plain English if it is ambiguous.
     """
-    return {"ports": _bus.list_ports(), "connected_port": _bus.connected_port}
+    result = {"ports": _bus.list_ports(), "connected_port": _bus.connected_port}
+    if _bus.simulated_notice:
+        result["notice"] = _bus.simulated_notice
+    return result
 
 
 @mcp.tool()
@@ -75,7 +78,10 @@ def connect(port: str | None = None, detect: bool = True, detect_attempts: int =
     replaces the previous connection, but only once the new port opens successfully —
     a failed attempt leaves the old connection intact.
     """
-    return _bus.connect(port=port, detect=detect, attempts=detect_attempts)
+    result = _bus.connect(port=port, detect=detect, attempts=detect_attempts)
+    if _bus.simulated_notice and isinstance(result, dict):
+        result = {**result, "notice": _bus.simulated_notice}
+    return result
 
 
 @mcp.tool()

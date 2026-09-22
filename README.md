@@ -32,7 +32,8 @@ for everyday moves. It ships with a **mock backend**, so you can try the whole t
 ## Quickstart (no hardware, ~2 minutes)
 
 ```bash
-# Run the server directly with uv (recommended):
+# Run the server directly with uv (recommended). This runs the SIMULATOR —
+# for real motors see "Drive real motors" below:
 uvx --from servomotor-mcp servomotor-mcp
 
 # or install it:
@@ -57,7 +58,9 @@ servomotor-mcp
 ```
 
 With the `servomotor` library installed the server uses the real serial backend
-automatically. In a session, the model then:
+automatically. Without it, the server runs its simulator and says so: `list_serial_ports`
+and `connect` return a `notice` field, and a warning goes to stderr. With uv, use
+`uvx --from 'servomotor-mcp[serial]' servomotor-mcp`. In a session, the model then:
 
 1. `list_serial_ports` — enumerates the machine's ports (macOS `/dev/cu.*`,
    Windows `COM*`, Linux `/dev/ttyUSB*`), flagging USB serial adapters;

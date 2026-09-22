@@ -11,7 +11,7 @@ it runs with no hardware.
 ``motors`` module can be used and tested without the MCP SDK installed.
 """
 
-__version__ = "0.3.0"
+__version__ = "0.3.2"
 
 __all__ = ["main", "__version__"]
 

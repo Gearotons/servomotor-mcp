@@ -3,7 +3,7 @@
   "name": "io.github.Gearotons/servomotor-mcp",
   "title": "Gearotons M17 Servomotor",
   "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485; mock mode, no hardware.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "repository": {
     "url": "https://github.com/Gearotons/servomotor-mcp",
     "source": "github"
@@ -14,14 +14,14 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "servomotor-mcp",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "transport": {
         "type": "stdio"
       },
       "environmentVariables": [
         {
           "name": "GEAROTONS_MOTOR_BACKEND",
-          "description": "'auto' (default: real serial backend when the servomotor library is installed, mock otherwise), 'serial', or 'mock'.",
+          "description": "'auto' (default: real serial backend when the servomotor library is installed, otherwise the simulator, which says so in list_serial_ports), 'serial', or 'mock'. For real motors install servomotor-mcp[serial].",
           "isRequired": false,
           "default": "auto"
         },

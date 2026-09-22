@@ -93,6 +93,9 @@ class BusBase:
     and ``_raw_execute(address, tool_name, args)``.
     """
 
+    #: Set on the simulator only: a sentence telling the model and user that no real motor will move.
+    simulated_notice: str | None = None
+
     def __init__(self) -> None:
         self.connected_port: str | None = None
         self.devices: dict[int, int] = {}  # unique_id -> alias, from last detection
@@ -372,7 +375,10 @@ class BusBase:
             return self.motor_status(address)
 
     def stop(self, motor: str | int | None = None) -> dict:
-        """Emergency-stop: halt motion and empty the move queue (holding torque stays)."""
+        """Emergency-stop: the firmware disables the driver outputs and empties the move queue.
+
+        No holding torque afterwards; send ``enable_mosfets`` before the next move.
+        """
         address = BROADCAST if motor is None else self.resolve(motor)
         with _LOCK:
             self._raw_execute(address, "emergency_stop", [])
@@ -788,11 +794,38 @@ class MockBus(BusBase):
         return [0] * len(spec.outputs)
 
 
+SIMULATED_NOTICE_NO_LIBRARY = (
+    "SIMULATED MOTORS: the 'servomotor' library is not installed, so this server is running its "
+    "built-in simulator and no real motor will move. To drive real M17 motors, install "
+    "'servomotor-mcp[serial]' (for uvx: uvx --from 'servomotor-mcp[serial]' servomotor-mcp) and "
+    "restart the server. Set GEAROTONS_MOTOR_BACKEND=mock to use the simulator on purpose."
+)
+SIMULATED_NOTICE_REQUESTED = (
+    "SIMULATED MOTORS: GEAROTONS_MOTOR_BACKEND=mock is set, so these are simulated ports and motors; "
+    "no real motor will move."
+)
+
+
 def get_bus() -> BusBase:
-    """Construct the backend selected by ``GEAROTONS_MOTOR_BACKEND`` (default: auto)."""
+    """Construct the backend selected by ``GEAROTONS_MOTOR_BACKEND`` (default: auto).
+
+    ``auto`` uses the real serial backend when the ``servomotor`` library is installed and the
+    simulator otherwise. Whenever the simulator is used, the returned bus carries a
+    ``simulated_notice`` (surfaced to the model by ``list_serial_ports`` and ``connect``) and a
+    warning is written to stderr, so a user with real hardware never ends up on the simulator
+    without being told.
+    """
     backend = os.environ.get("GEAROTONS_MOTOR_BACKEND", "auto").lower()
+    notice = SIMULATED_NOTICE_REQUESTED
     if backend == "auto":
-        backend = "serial" if find_spec("servomotor") else "mock"
+        if find_spec("servomotor"):
+            backend = "serial"
+        else:
+            backend = "mock"
+            notice = SIMULATED_NOTICE_NO_LIBRARY
     if backend == "serial":
         return SerialBus()
-    return MockBus()
+    bus = MockBus()
+    bus.simulated_notice = notice
+    print(f"servomotor-mcp: {notice}", file=sys.stderr, flush=True)
+    return bus

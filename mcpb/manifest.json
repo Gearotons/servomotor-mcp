@@ -3,7 +3,7 @@
   "manifest_version": "0.2",
   "name": "servomotor-mcp",
   "display_name": "Gearotons M17 Servomotor Control",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Drive Gearotons M17 open-source servomotors from plain English over RS-485 — discovers your serial ports, auto-detects the motors on the bus, and exposes the firmware's full command set.",
   "long_description": "The M17 is an open-source, closed-loop NEMA-17 integrated servomotor (motor + driver + controller + encoder in one, daisy-chainable over RS-485). This server lets Claude discover the serial adapters on your machine, auto-detect every motor on the bus (unique ID + alias, nothing hardcoded), and run any command the firmware supports — one MCP tool is generated per command in the servomotor library's catalog (48 as of library 0.10.0), plus high-level move tools with completion waits. Verified on production motors with full multi-turn range; the motor's firmware self-protects against over-current/voltage/temperature. A mock backend lets you try everything with no hardware attached.",
   "author": {

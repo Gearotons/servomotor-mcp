@@ -894,7 +894,7 @@ wheels = [
 
 [[package]]
 name = "servomotor-mcp"
-version = "0.3.0"
+version = "0.3.2"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },
@@ -910,7 +910,7 @@ serial = [
 
 [package.metadata]
 requires-dist = [
-    { name = "mcp", specifier = ">=1.2.0" },
+    { name = "mcp", specifier = ">=1.2.0,<2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "servomotor", marker = "extra == 'serial'", specifier = ">=0.10.0" },
 ]
